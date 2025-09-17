@@ -128,9 +128,14 @@ class EntradeClient:
         _headers = {
             "Authorization": f"Bearer {self.token}"
         }
+        _json = {
+            "orderType":"LO",
+            "triggeredBy":"close-deal"
+        }
 
         url = f"{self.base_url}{"papertrade-" if is_demo else ""}entrade-api/derivative/deals/{deal_id}/_close_deal"
-        response = post(url, headers=_headers)
+
+        response = post(url, headers=_headers, json=_json)
         response.raise_for_status()
         print("Hủy lệnh thành công! (Entrade)")
         return response.json()
@@ -169,7 +174,7 @@ class EntradeClient:
             "_end": end
         }
 
-        url = f"https://services.entrade.com.vn/{"papertrade-" if is_demo else ""}entrade-api/derivative/deals"
+        url = f"{self.base_url}{"papertrade-" if is_demo else ""}entrade-api/derivative/deals"
 
         response = get(url, headers=_headers, params=_params)
         response.raise_for_status()
@@ -177,10 +182,11 @@ class EntradeClient:
 
     def CloseAllDeals(self, is_demo: bool = False):
         try:
-            deals = self.GetDeals(0, 255, is_demo)
+            deals = self.GetDeals(0, 255, is_demo)["data"]
             for deal in deals:
-                self.CloseDeal(deal["id"], is_demo)
+                if deal["status"] == "ACTIVE":
+                    self.CloseDeal(int(deal["id"]), is_demo)
 
             print("Đóng tất cả lệnh thành công! (Entrade)")
         except:
-            print("CloseAllDeals() failed!")
+            print("CloseAllDeals() failed! (Entrade)")
