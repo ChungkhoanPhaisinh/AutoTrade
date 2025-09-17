@@ -158,3 +158,29 @@ class EntradeClient:
         json_data = response.json()
         self.investor_account_id = json_data.get("investorAccountId")
         return json_data
+
+    def GetDeals(self, start: int = 0, end: int = 100, is_demo: bool = False):
+        _headers = {
+            "Authorization": f"Bearer {self.token}"
+        }
+        _params = {
+            "investorId": self.investor_id,
+            "_start": start,
+            "_end": end
+        }
+
+        url = f"https://services.entrade.com.vn/{"papertrade-" if is_demo else ""}entrade-api/derivative/deals"
+
+        response = get(url, headers=_headers, params=_params)
+        response.raise_for_status()
+        return response.json()
+
+    def CloseAllDeals(self, is_demo: bool = False):
+        try:
+            deals = self.GetDeals(0, 255, is_demo)
+            for deal in deals:
+                self.CloseDeal(deal["id"], is_demo)
+
+            print("Đóng tất cả lệnh thành công! (Entrade)")
+        except:
+            print("CloseAllDeals() failed!")
