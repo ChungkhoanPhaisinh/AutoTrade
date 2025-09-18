@@ -1,10 +1,13 @@
+import data_processor as dp
+from global_var import ReadConfig
 import ssl
 import json
 import paho.mqtt.client as mqtt
 from random import randint
-import data_processor as dp
 
 # Configuration
+config = ReadConfig()
+
 BROKER_HOST = "datafeed-lts-krx.dnse.com.vn"
 BROKER_PORT = 443
 CLIENT_ID_PREFIX = "dnse-price-json-mqtt-ws-sub-"
@@ -17,17 +20,24 @@ def on_connect(client, userdata, flags, rc, properties):
     if rc == 0 and client.is_connected():
         print("Connected to MQTT Broker!")
         # Modify topics as needed
-        client.subscribe("plaintext/quotes/krx/mdds/v2/ohlc/derivative/1/VN30F1M", qos=1)
+        client.subscribe(config["ohlc_data_topic"], qos=1)
+
+        if config["calculate_spread"]:
+            client.subscribe(config["market_depth_data_topic"], qos=1)
+
         dp.InitializeData() # DO NOT REMOVE
     else:
         print(f"on_connect(): Failed to connect, return code {rc}\n")
 
-# Message callback (MUST call Update() inside)
-# def on_message(client, userdata, msg):
-#     payload = json.JSONDecoder().decode(msg.payload.decode())
+# Message callback (MUST call dp.UpdateData() inside)
+def on_message(client, userdata, msg):
+    payload = json.JSONDecoder().decode(msg.payload.decode())
 
-#     # DO NOT REMOVE
-#     Update(payload) # Send data to data_processor for each message
+    # DO NOT REMOVE
+    if msg.topic == config["ohlc_data_topic"]:
+        dp.UpdateData(payload) # Send data to data_processor for each message
+    elif msg.topic == config["market_depth_data_topic"]:
+        dp.UpdateMarketDepthData(payload)
 
 class MQTTClient:
     def __init__(self, investor_id, token):
@@ -48,7 +58,7 @@ class MQTTClient:
         self.client.enable_logger()
 
         self.client.on_connect = on_connect
-        self.client.on_message = lambda c, u, m: dp.UpdateData(json.JSONDecoder().decode(m.payload.decode())) # or 'on_message'
+        self.client.on_message = on_message # or lambda c, u, m: dp.UpdateData(json.JSONDecoder().decode(m.payload.decode())) [LACK logic for spread]
 
     def Connect(self):
         self.client.connect(BROKER_HOST, BROKER_PORT, keepalive=1200)

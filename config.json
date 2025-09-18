@@ -1,0 +1,6 @@
+{
+    "ohlc_data_topic": "plaintext/quotes/krx/mdds/v2/ohlc/derivative/1/VN30F1M",
+
+    "calculate_spread": true,
+    "market_depth_data_topic": "plaintext/quotes/krx/mdds/topprice/v1/roundlot/symbol/VN30F2509"
+}

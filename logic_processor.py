@@ -1,9 +1,8 @@
-from global_var import ENTRADE_CLIENT
+from global_var import ENTRADE_CLIENT #, LAST_BID_DEPTH, LAST_OFFER_DEPTH
 from datetime import datetime
 from agents.ma_cross_agent import ma_cross_agent
 from agents.BB_agent import bb_agent
 from agent import Agent
-
 
 ACTIVE_BOT: list[Agent] = [
     ma_cross_agent,
@@ -12,6 +11,8 @@ ACTIVE_BOT: list[Agent] = [
 
 def CalculateStrategy(processed_data):
     close_price = processed_data[-1][3]
+    # print(LAST_BID_DEPTH) // Market depth data
+    # print(LAST_OFFER_DEPTH)
 
     for agent in ACTIVE_BOT:
         result = agent.Calculate(processed_data)
