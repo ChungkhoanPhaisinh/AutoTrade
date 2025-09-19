@@ -1,6 +1,6 @@
+from agent import Agent
 import numpy as np
 import technical_analysis as ta
-from agent import Agent
 
 class MACrossAgent(Agent):
     def __init__(self, short_period : int = 7, long_period : int = 30, name = "Bot MA Cross"):
@@ -22,6 +22,5 @@ class MACrossAgent(Agent):
             return False
         else:
             return None
-
 
 ma_cross_agent = MACrossAgent()

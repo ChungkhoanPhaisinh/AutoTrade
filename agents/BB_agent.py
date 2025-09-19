@@ -1,6 +1,6 @@
+from agent import Agent
 import numpy as np
 import technical_analysis as ta
-from agent import Agent
 
 class BBAgent(Agent):
     def __init__(self, low_thres: float = -1, high_thres: float = 1, window: int = 20, name: str = "Bot Bollinger Bands"):
@@ -26,6 +26,5 @@ class BBAgent(Agent):
             return False
         else:
             return None
-
 
 bb_agent = BBAgent()

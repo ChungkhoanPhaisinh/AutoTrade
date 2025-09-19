@@ -1,9 +1,9 @@
 import logic_processor as lp
-from global_var import LAST_BID_DEPTH, LAST_OFFER_DEPTH
+import GLOBAL
 from requests import get
 from time import time
 
-def GetOHLCVData(type : str, symbol : str, from_time : int, to_time : int, resolution : str = '15') -> dict[str, list[float]]:
+def GetOHLCVData(type: str, symbol: str, from_time: int, to_time: int, resolution: str = '15') -> dict[str, list[float]]:
     '''
     **type**: "derivative", "stock" hoặc "index"\n
     **symbol**: mã cổ phiếu/phái sinh/thị trường tương ứng với 'type'\n
@@ -18,7 +18,8 @@ def GetOHLCVData(type : str, symbol : str, from_time : int, to_time : int, resol
     return response.json()
 
 HISTORY = []
-last_T = None
+last_T: int = 0
+last_tick = ()
 
 def InitializeData():
     global HISTORY, last_T
@@ -36,30 +37,41 @@ def InitializeData():
     ))
 
     print("Successfully initialized data:\n...")
-    print(HISTORY[-10:])
-    print("==================================================")
+    print(HISTORY[-5:])
+    print("===================================")
 
-def UpdateData(new_data):
-    global HISTORY, last_T
+def UpdateOHLCVData(new_data):
+    global HISTORY, last_T, last_tick
+
+    O = new_data.get("open")
+    H = new_data.get("high")
+    L = new_data.get("low")
+    C = new_data.get("close")
+    V = int(new_data.get("volume"))
+    current_tick = (O, H, L, C, V)
+
+    lp.OnTick(current_tick)
 
     T = int(new_data.get("time"))
     if last_T < T: # The candle have just finished, use last data of it as the final result
         last_T = T
+        HISTORY.append(last_tick)
+        lp.OnBarClosed(HISTORY)
 
-        O = new_data.get("open")
-        H = new_data.get("high")
-        L = new_data.get("low")
-        C = new_data.get("close")
-        V = int(new_data.get("volume"))
-        HISTORY.append([O, H, L, C, V])
-        lp.CalculateStrategy(HISTORY)
+    last_tick = current_tick
 
-def UpdateMarketDepthData(new_market_depth_data):
-    LAST_BID_DEPTH.clear()
-    LAST_OFFER_DEPTH.clear()
+def UpdateMarketData(new_market_data):
+    GLOBAL.TOTAL_BID = int(new_market_data["totalBidQtty"])
+    GLOBAL.TOTAL_OFFER = int(new_market_data["totalOfferQtty"])
 
-    for dict in new_market_depth_data["bid"]:
-        LAST_BID_DEPTH.append(tuple(dict.values()))
+    GLOBAL.BID_DEPTH.clear()
+    for dict in new_market_data["bid"]:
+        GLOBAL.BID_DEPTH.append(tuple(dict.values()))
 
-    for dict in new_market_depth_data["offer"]:
-        LAST_OFFER_DEPTH.append(tuple(dict.values()))
+    GLOBAL.OFFER_DEPTH.clear()
+    for dict in new_market_data["offer"]:
+        GLOBAL.OFFER_DEPTH.append(tuple(dict.values()))
+
+def UpdateForeignData(new_foreign_data):
+    GLOBAL.TOTAL_FOREIGN_BUY = int(new_foreign_data["buyForeignQuantity"])
+    GLOBAL.TOTAL_FOREIGN_SELL = int(new_foreign_data["sellForeignQuantity"])

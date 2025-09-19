@@ -1,5 +1,5 @@
 import data_processor as dp
-from global_var import ReadConfig
+from GLOBAL import ReadConfig
 import ssl
 import json
 import paho.mqtt.client as mqtt
@@ -22,8 +22,11 @@ def on_connect(client, userdata, flags, rc, properties):
         # Modify topics as needed
         client.subscribe(config["ohlc_data_topic"], qos=1)
 
-        if config["calculate_spread"]:
-            client.subscribe(config["market_depth_data_topic"], qos=1)
+        if config["get_market_data"]:
+            client.subscribe(config["market_data_topic"], qos=1)
+        
+        if config["get_foreign_data"]:
+            client.subscribe(config["foreign_data_topic"], qos=1)
 
         dp.InitializeData() # DO NOT REMOVE
     else:
@@ -35,9 +38,11 @@ def on_message(client, userdata, msg):
 
     # DO NOT REMOVE
     if msg.topic == config["ohlc_data_topic"]:
-        dp.UpdateData(payload) # Send data to data_processor for each message
-    elif msg.topic == config["market_depth_data_topic"]:
-        dp.UpdateMarketDepthData(payload)
+        dp.UpdateOHLCVData(payload)
+    elif msg.topic == config["market_data_topic"]:
+        dp.UpdateMarketData(payload)
+    elif msg.topic == config["foreign_data_topic"]:
+        dp.UpdateForeignData(payload)
 
 class MQTTClient:
     def __init__(self, investor_id, token):

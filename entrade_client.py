@@ -21,7 +21,7 @@ class EntradeClient:
         self.token = response.json().get("token")
         print("Đăng nhập thành công! (Entrade)")
 
-    def Order(self, symbol, side, price, loan, volume, order_type, is_demo: bool = False):
+    def Order(self, symbol, side, price, loan, volume, order_type, is_demo: bool):
         _headers = {
             "Authorization": f"Bearer {self.token}"
         }
@@ -60,13 +60,13 @@ class EntradeClient:
         except HTTPError as e:
             print("CancelOrder() failed! (Entrade):", e)
 
-    def CancelAllOrders(self, investor_id, investor_account_id, is_demo: bool):
+    def CancelAllOrders(self, is_demo: bool):
         _headers = {
             "Authorization": f"Bearer {self.token}"
         }
         _params = {
-            "investorId": investor_id,
-            "investorAccountId": investor_account_id
+            "investorId": self.investor_id,
+            "investorAccountId": self.investor_account_id
         }
 
         url = f"{self.base_url}{"papertrade-" if is_demo else ""}entrade-api/derivative/orders"
@@ -79,7 +79,7 @@ class EntradeClient:
         except HTTPError as e:
             print("CancelAllOrders() failed! (Entrade):", e)
 
-    def ConditionalOrder(self, symbol, investor_id, investor_account_id, side, price, loan, volume, condition, is_demo: bool):
+    def ConditionalOrder(self, symbol, side, price, loan, volume, condition, is_demo: bool):
         _headers = {
             "Authorization": f"Bearer {self.token}"
         }
@@ -89,8 +89,8 @@ class EntradeClient:
             "bankMarginPortfolioId": loan or (32 if is_demo else 37),
             "condition": condition,
             "expiredTime": f"{current_time.tm_year}-{current_time.tm_mon:02d}-{current_time.tm_mday:02d}T07:30:00.000Z",
-            "investorAccountId": investor_account_id,
-            "investorId": investor_id,
+            "investorAccountId": self.investor_account_id,
+            "investorId": self.investor_id,
             "symbol": symbol,
             "targetPrice": price,
             "targetQuantity": volume,
@@ -123,13 +123,13 @@ class EntradeClient:
         except HTTPError as e:
             print("CancelConditionalOrder() failed! (Entrade):", e)
 
-    def CancelAllConditionalOrder(self, investor_id, investor_account_id, is_demo: bool):
+    def CancelAllConditionalOrder(self, is_demo: bool):
         _headers = {
             "Authorization": f"Bearer {self.token}"
         }
         _params = {
-            "investorId": investor_id,
-            "investorAccountId": investor_account_id
+            "investorId": self.investor_id,
+            "investorAccountId": self.investor_account_id
         }
 
         url = f"{self.base_url}{"papertrade-" if is_demo else ""}smart-order/orders"
@@ -185,7 +185,7 @@ class EntradeClient:
         self.investor_account_id = json_data.get("investorAccountId")
         return json_data
 
-    def GetDeals(self, start: int = 0, end: int = 100, is_demo: bool = False):
+    def GetDeals(self, start: int = 0, end: int = 100, is_demo: bool = True):
         _headers = {
             "Authorization": f"Bearer {self.token}"
         }
@@ -201,7 +201,7 @@ class EntradeClient:
         response.raise_for_status()
         return response.json()
 
-    def CloseAllDeals(self, is_demo: bool = False):
+    def CloseAllDeals(self, is_demo: bool):
         try:
             deals = self.GetDeals(0, 255, is_demo)["data"]
             for deal in deals:

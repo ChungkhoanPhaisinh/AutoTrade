@@ -1,7 +1,7 @@
-from global_var import DNSE_CLIENT, ENTRADE_CLIENT
+import GLOBAL
+from mqtt_client import MQTTClient
 from dotenv import load_dotenv
 from os import getenv
-from mqtt_client import MQTTClient
 
 load_dotenv()
 gmailEntrade = getenv("usernameEntrade") # Email/SĐT tài khoản Entrade
@@ -13,19 +13,20 @@ appPasswordDNSE = getenv("appPasswordDNSE") # App Password cho email đăng kí 
 
 if __name__ == "__main__":
     # Connect to Entrade (Only needed if used to auto trade)
-    ENTRADE_CLIENT.Authenticate(gmailEntrade, passwordEntrade)
-    ENTRADE_CLIENT.GetAccountInfo()
-    ENTRADE_CLIENT.GetAccountBalance()
+    GLOBAL.ENTRADE_CLIENT.Authenticate(gmailEntrade, passwordEntrade)
+    GLOBAL.ENTRADE_CLIENT.GetAccountInfo() # Get investor_id
+    GLOBAL.ENTRADE_CLIENT.GetAccountBalance() # Get investor_account_id
 
-    # Connect to MQTT server
-    DNSE_CLIENT.Authenticate(gmailDNSE, passwordDNSE)
+    # Connect to DNSE
+    GLOBAL.DNSE_CLIENT.Authenticate(gmailDNSE, passwordDNSE)
 
-    if DNSE_CLIENT.token is None:
+    if GLOBAL.DNSE_CLIENT.token is None:
         raise SystemError("Login to DNSE failed!")
 
-    investor_id = DNSE_CLIENT.GetAccountInfo().get("investorId")
-    token = DNSE_CLIENT.token
+    investor_id = GLOBAL.DNSE_CLIENT.GetAccountInfo().get("investorId")
+    token = GLOBAL.DNSE_CLIENT.token
 
+    # Connect to MQTT server
     MQTT_CLIENT = MQTTClient(investor_id, token)
     MQTT_CLIENT.Connect()
     MQTT_CLIENT.Start()
