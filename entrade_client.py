@@ -185,12 +185,12 @@ class EntradeClient:
         self.investor_account_id = json_data.get("investorAccountId")
         return json_data
 
-    def GetDeals(self, start: int = 0, end: int = 100, is_demo: bool = True):
+    def GetDeals(self, investor_account_id = None, start: int = 0, end: int = 100, is_demo: bool = True):
         _headers = {
             "Authorization": f"Bearer {self.token}"
         }
         _params = {
-            "investorId": self.investor_id,
+            "investorAccountId": investor_account_id or self.investor_account_id,
             "_start": start,
             "_end": end
         }

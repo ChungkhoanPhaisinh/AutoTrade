@@ -17,31 +17,44 @@ def GetOHLCVData(type: str, symbol: str, from_time: int, to_time: int, resolutio
     response.raise_for_status()
     return response.json()
 
-HISTORY = []
-last_T: int = 0
-last_tick = ()
+last_T: int = -1
+last_tick: tuple = ()
 
 def InitializeData():
-    global HISTORY, last_T
+    global last_T
 
     last_T = int(time())
     past = last_T - 72_000 # 20 hours prior to now, ensure that we definitely get at least 89 candles (1 minute resolution!) :3
 
-    json_data = GetOHLCVData("derivative", "VN30F1M", past, last_T, '1')
-    HISTORY = list(zip(
-        json_data['o'],
-        json_data['h'],
-        json_data['l'],
-        json_data['c'],
-        json_data['v']
-    ))
+    attempt = 3
+    while attempt > 0:
+        attempt -= 1
 
-    print("Successfully initialized data:\n...")
-    print(HISTORY[-5:])
-    print("===================================")
+        json_data = GetOHLCVData("derivative", "VN30F1M", past, last_T, '1')
+        HISTORY = list(zip(
+            json_data['o'],
+            json_data['h'],
+            json_data['l'],
+            json_data['c'],
+            json_data['v']
+        ))
+
+        if len(HISTORY) < 1:
+            print("Initialized data failed! Retrying...")
+            continue
+
+        print("Successfully initialized data:\n...")
+        print(HISTORY[-5:])
+        print("===================================")
+
+        lp.OnStart(HISTORY) # DO NOT REMOVE
+        return
+
+    print("Initialized data failed! Exiting...")
+    GLOBAL.NOT_TERMINATED = False
 
 def UpdateOHLCVData(new_data):
-    global HISTORY, last_T, last_tick
+    global last_T, last_tick
 
     O = new_data.get("open")
     H = new_data.get("high")
@@ -55,8 +68,7 @@ def UpdateOHLCVData(new_data):
     T = int(new_data.get("time"))
     if last_T < T: # The candle have just finished, use last data of it as the final result
         last_T = T
-        HISTORY.append(last_tick)
-        lp.OnBarClosed(HISTORY)
+        lp.OnBarClosed(last_tick)
 
     last_tick = current_tick
 

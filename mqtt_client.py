@@ -14,7 +14,7 @@ CLIENT_ID_PREFIX = "dnse-price-json-mqtt-ws-sub-"
 # Generate random client ID
 client_id = f"{CLIENT_ID_PREFIX}{randint(1000, 2000)}"
 
-# Connect callback (Subscribe to topics and initialize dp.HISTORY here)
+# Connect callback
 def on_connect(client, userdata, flags, rc, properties):
     '''MQTTv5 connection callback'''
     if rc == 0 and client.is_connected():
@@ -32,11 +32,10 @@ def on_connect(client, userdata, flags, rc, properties):
     else:
         print(f"on_connect(): Failed to connect, return code {rc}\n")
 
-# Message callback (MUST call dp.UpdateData() inside)
+# Message callback
 def on_message(client, userdata, msg):
     payload = json.JSONDecoder().decode(msg.payload.decode())
 
-    # DO NOT REMOVE
     if msg.topic == config["ohlc_data_topic"]:
         dp.UpdateOHLCVData(payload)
     elif msg.topic == config["market_data_topic"]:
@@ -49,7 +48,7 @@ class MQTTClient:
         self.investor_id = investor_id
         self.token = token
         self.client = mqtt.Client(
-            mqtt.CallbackAPIVersion.VERSION2,
+            mqtt.CallbackAPIVersion.VERSION2, # type: ignore
             client_id,
             protocol=mqtt.MQTTv5,
             transport="websockets"
