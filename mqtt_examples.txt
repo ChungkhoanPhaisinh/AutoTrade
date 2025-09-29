@@ -1,2 +1,0 @@
-plaintext/quotes/krx/mdds/v2/ohlc/derivative/1/VN30F1M:
-{'time': '1757042700', 'open': 1893.2, 'high': 1893.9, 'low': 1893.1, 'close': 1893.9, 'volume': '535', 'symbol': 'VN30F1M', 'lastUpdated': '1757042745', 'type': 'DERIVATIVE'}
