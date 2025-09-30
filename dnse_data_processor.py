@@ -1,4 +1,3 @@
-import logic_processor as lp
 import GLOBAL
 from requests import get
 from time import time
@@ -17,73 +16,69 @@ def GetOHLCVData(type: str, symbol: str, from_time: int, to_time: int, resolutio
     response.raise_for_status()
     return response.json()
 
-last_T: int = -1
-last_tick: tuple = ()
-
 def InitializeData():
     global last_T
 
     last_T = int(time())
     past = last_T - 72_000 # 20 hours prior to now, ensure that we definitely get at least 89 candles (1 minute resolution!) :3
 
-    attempt = 3
-    while attempt > 0:
-        attempt -= 1
+    json_data = GetOHLCVData("derivative", "VN30F1M", past, last_T, '1')
+    HISTORY = list(zip(
+        json_data['o'],
+        json_data['h'],
+        json_data['l'],
+        json_data['c'],
+        json_data['v']
+    ))
 
-        json_data = GetOHLCVData("derivative", "VN30F1M", past, last_T, '1')
-        HISTORY = list(zip(
-            json_data['o'],
-            json_data['h'],
-            json_data['l'],
-            json_data['c'],
-            json_data['v']
-        ))
-
-        if len(HISTORY) < 1:
-            print("Initialized data failed! Retrying...")
-            continue
-
+    if len(HISTORY) < 1:
+        print("Initialized data failed! Exiting...")
+        GLOBAL.Exit()
+    else:
         print("Successfully initialized data:\n...")
         print(HISTORY[-5:])
         print("===================================")
 
-        lp.OnStart(HISTORY) # DO NOT REMOVE
-        return
+    return HISTORY
 
-    print("Initialized data failed! Exiting...")
-    GLOBAL.NOT_TERMINATED = False
-
+last_T: int = -1
 def UpdateOHLCVData(new_data):
-    global last_T, last_tick
+    global last_T
 
     O = new_data.get("open")
     H = new_data.get("high")
     L = new_data.get("low")
     C = new_data.get("close")
     V = int(new_data.get("volume"))
-    current_tick = (O, H, L, C, V)
 
-    lp.OnTick(current_tick)
+    current_tick = (O, H, L, C, V)
+    GLOBAL.UpdateLastTick(current_tick)
 
     T = int(new_data.get("time"))
     if last_T < T: # The candle have just finished, use last data of it as the final result
         last_T = T
-        lp.OnBarClosed(last_tick)
+        GLOBAL.AddM1Bar(current_tick)
 
-    last_tick = current_tick
+def UpdateStockInfoData(data):
+    GLOBAL.TOTAL_FOREIGN_BUY = int(data["buyForeignQuantity"])
+    GLOBAL.TOTAL_FOREIGN_SELL = int(data["sellForeignQuantity"])
 
-def UpdateMarketData(new_market_data):
-    GLOBAL.TOTAL_BID = int(new_market_data["totalBidQtty"])
-    GLOBAL.TOTAL_OFFER = int(new_market_data["totalOfferQtty"])
+def UpdateTopPriceData(data):
+    GLOBAL.TOTAL_BID = int(data["totalBidQtty"])
+    GLOBAL.TOTAL_OFFER = int(data["totalOfferQtty"])
 
     GLOBAL.BID_DEPTH.clear()
-    for dict in new_market_data["bid"]:
+    for dict in data["bid"]:
         GLOBAL.BID_DEPTH.append(tuple(dict.values()))
 
     GLOBAL.OFFER_DEPTH.clear()
-    for dict in new_market_data["offer"]:
+    for dict in data["offer"]:
         GLOBAL.OFFER_DEPTH.append(tuple(dict.values()))
 
-def UpdateForeignData(new_foreign_data):
-    GLOBAL.TOTAL_FOREIGN_BUY = int(new_foreign_data["buyForeignQuantity"])
-    GLOBAL.TOTAL_FOREIGN_SELL = int(new_foreign_data["sellForeignQuantity"])
+def Start():
+    # Initialize first to also get correct "last_T"
+    GLOBAL.InitializeHistory(InitializeData()) # type: ignore
+
+    GLOBAL.MQTT_CLIENT.on_ohlc_data.Connect(UpdateOHLCVData)
+    GLOBAL.MQTT_CLIENT.on_stock_info_data.Connect(UpdateStockInfoData)
+    GLOBAL.MQTT_CLIENT.on_top_price_data.Connect(UpdateTopPriceData)

@@ -1,9 +1,0 @@
-{
-    "ohlc_data_topic": "plaintext/quotes/krx/mdds/v2/ohlc/derivative/1/VN30F1M",
-
-    "get_market_data": true,
-    "market_data_topic": "plaintext/quotes/krx/mdds/topprice/v1/roundlot/symbol/41I1FA000",
-
-    "get_foreign_data": true,
-    "foreign_data_topic": "plaintext/quotes/krx/mdds/stockinfo/v1/roundlot/symbol/41I1FA000"
-}

@@ -88,7 +88,7 @@ class EntradeClient:
         _json = {
             "bankMarginPortfolioId": loan or (32 if is_demo else 37),
             "condition": condition,
-            "expiredTime": f"{current_time.tm_year}-{current_time.tm_mon:02d}-{current_time.tm_mday:02d}T07:30:00.000Z",
+            "expiredTime": f"{current_time.tm_year}-{current_time.tm_mon:02d}-{current_time.tm_mday:02d}T08:00:00.000Z",
             "investorAccountId": self.investor_account_id,
             "investorId": self.investor_id,
             "symbol": symbol,

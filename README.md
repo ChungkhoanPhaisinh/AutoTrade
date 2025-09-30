@@ -34,7 +34,7 @@ appPasswordDNSE=
 
 ### 4. Run the system
 ```bash
-python authenticator.py
+python main.py
 ```
 
 ## 🤖 Creating Your Own Agent

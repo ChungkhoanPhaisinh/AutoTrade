@@ -2,12 +2,12 @@ class Signal:
     def __init__(self):
         self.subscribers = []
 
-    def connect(self, callback):
+    def Connect(self, callback):
         self.subscribers.append(callback)
 
-    def emit(self, *args, **kwargs):
+    def Emit(self, *args, **kwargs):
         for fn in self.subscribers:
             fn(*args, **kwargs)
 
-    def disconnectAll(self):
+    def DisconnectAll(self):
         self.subscribers.clear()
