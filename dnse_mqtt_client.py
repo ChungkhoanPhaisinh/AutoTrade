@@ -41,8 +41,15 @@ class DNSE_MQTT_Client:
         self.get_stock_info = get_stock_info
         self.get_top_price = get_top_price
 
+        # Prevent backlog build up
+        self.latest_data = {"ohlc": None, "top_price": None, "stock_info": None}
+
     def Start(self):
         self.client.loop_start()
+
+        priority_topic_idx = 0
+        while True:
+            priority_topic_idx = self.ProcessRoundRobin(priority_topic_idx)
 
     def Connect(self, investor_id: str, token: str):
         self.client.username_pw_set(investor_id, token)
@@ -74,15 +81,40 @@ class DNSE_MQTT_Client:
         print(f"DNSE_MQTT_Client.Unsubscribe(): MQTT client is not connected!")
         return False
 
-    def on_message(self, client, userdata, msg):
+    def on_message(self, client, userdata, msg): # Load received data to "self.latest_data"
         payload = JSONDecoder().decode(msg.payload.decode())
 
         if msg.topic == OHLC_DATA_TOPIC:
-            self.on_ohlc_data.Emit(payload)
+            self.latest_data["ohlc"] = payload
         elif msg.topic == TOP_PRICE_TOPIC:
-            self.on_top_price_data.Emit(payload)
+            self.latest_data["top_price"] = payload
         elif msg.topic == STOCK_INFO_TOPIC:
-            self.on_stock_info_data.Emit(payload)
+            self.latest_data["stock_info"] = payload
+
+    def ProcessRoundRobin(self, priority_topic_idx: int) -> int:
+        pending_data = tuple(self.latest_data.values())
+
+        if priority_topic_idx == 0:
+            if pending_data[0]:
+                self.on_ohlc_data.Emit(pending_data[0])
+                self.latest_data["ohlc"] = None # Reset the value to avoid sending duplicate messages
+                return 1
+
+            priority_topic_idx = 1 # Prepare to try topic 1 since OHLC data is None
+
+        if priority_topic_idx == 1:
+            if pending_data[1]:
+                self.on_top_price_data.Emit(pending_data[1])
+                self.latest_data["top_price"] = None
+                return 2
+
+            priority_topic_idx = 2 # Prepare to try topic 2 since Top Price data is None
+
+        if pending_data[2]:
+            self.on_stock_info_data.Emit(pending_data[2])
+            self.latest_data["stock_info"] = None
+
+        return 0
 
     def on_connect(self, client, userdata, flags, rc, properties):
         '''MQTTv5 connection callback'''
