@@ -3,22 +3,22 @@ from entrade_client import EntradeClient
 from dnse_mqtt_client import DNSE_MQTT_Client
 from bar_data import BarData
 from json import load
-from signal import pause, SIGINT
-from os import kill, getpid
 from SIGNAL import Signal
+from threading import Event
 
 from typing import TypeAlias # OPTIONAL: Stricter type-check
 OHLCVData: TypeAlias = tuple[float, float, float, float, int]
 
-def Wait():
-    pause()
-
-def Exit():
-    kill(getpid(), SIGINT) # Same as Ctrl+C
-
 def ReadConfig():
     with open("config.json", 'r') as f:
         return load(f)
+
+WAIT_EVENT = Event()
+def Wait():
+    WAIT_EVENT.wait()
+
+def Exit():
+    WAIT_EVENT.set()
 
 ON_OHLCV_TICK = Signal()
 ON_M1_BAR_CLOSED = Signal()

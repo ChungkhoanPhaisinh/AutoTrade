@@ -17,10 +17,13 @@ def OnTick(data: GLOBAL.OHLCVData):
     # print("Dư bán:", GLOBAL.TOTAL_OFFER)
     # print("Tổng KLGD mua nước ngoài:", GLOBAL.TOTAL_FOREIGN_BUY)
     # print("Tổng KLGD bán nước ngoài:", GLOBAL.TOTAL_FOREIGN_SELL)
-    print("LogicProcessor.OnTick() called :3")
+    print(data)
 
 # CORE FUNCTIONS, DON'T REMOVE
 def OnM1BarClosed(bar: GLOBAL.OHLCVData):
+    for bar_data in GLOBAL.BAR_DATA.values():
+        bar_data.AddBar(bar) # DO NOT REMOVE
+
     close_price = bar[3]
 
     for agent in ACTIVE_BOT:

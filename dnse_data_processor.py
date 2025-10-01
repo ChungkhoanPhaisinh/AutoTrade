@@ -50,14 +50,14 @@ def UpdateOHLCVData(new_data):
     L = new_data.get("low")
     C = new_data.get("close")
     V = int(new_data.get("volume"))
-
     current_tick = (O, H, L, C, V)
-    GLOBAL.UpdateLastTick(current_tick)
 
     T = int(new_data.get("time"))
     if last_T < T: # The candle have just finished, use last data of it as the final result
         last_T = T
-        GLOBAL.AddM1Bar(current_tick)
+        GLOBAL.AddM1Bar(GLOBAL.LAST_TICK)
+
+    GLOBAL.UpdateLastTick(current_tick)
 
 def UpdateStockInfoData(data):
     GLOBAL.TOTAL_FOREIGN_BUY = int(data["buyForeignQuantity"])

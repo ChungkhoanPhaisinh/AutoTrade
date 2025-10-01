@@ -34,9 +34,10 @@ if __name__ == "__main__":
         # Connect to MQTT server
         GLOBAL.MQTT_CLIENT.Connect(investor_id, token)
         GLOBAL.MQTT_CLIENT.Start()
+
         GLOBAL.Wait()
-    except KeyboardInterrupt:
-        pass
+    except Exception as e:
+        print(e)
     finally:
         print("Disconnecting...")
         GLOBAL.MQTT_CLIENT.client.disconnect()
