@@ -38,6 +38,8 @@ if __name__ == "__main__":
         GLOBAL.Wait()
     except Exception as e:
         print(e)
+    except KeyboardInterrupt: # OPTIONAL: Allow shutdown by Control+C in Mac
+        pass
     finally:
         print("Disconnecting...")
         GLOBAL.MQTT_CLIENT.client.disconnect()
