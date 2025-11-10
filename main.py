@@ -1,15 +1,14 @@
 import GLOBAL
-from dotenv import load_dotenv
-from os import getenv
 from dnse_data_processor import Start as DDP_START
 from logic_processor import Start as LP_START
+from utils import ReadJSONFile, WriteJSONFile
 
-load_dotenv()
-gmailEntrade = getenv("usernameEntrade") # Email/SĐT tài khoản Entrade
-passwordEntrade = getenv("passwordEntrade") # Mật khẩu tài khoản Entrade
+JSON_DATA = ReadJSONFile("config.json")
+gmailEntrade = JSON_DATA["username_entrade"] # Email/SĐT tài khoản Entrade
+passwordEntrade = JSON_DATA["password_entrade"] # Mật khẩu tài khoản Entrade
 
-gmailDNSE = getenv("gmailDNSE") # Email/SĐT tài khoản DNSE
-passwordDNSE = getenv("passwordDNSE") # Mật khẩu tài khoản DNSE
+gmailDNSE = JSON_DATA["username_entrade"] # Email/SĐT tài khoản DNSE
+passwordDNSE = JSON_DATA["password_entrade"] # Mật khẩu tài khoản DNSE
 
 if __name__ == "__main__":
     try:
@@ -17,6 +16,13 @@ if __name__ == "__main__":
         GLOBAL.ENTRADE_CLIENT.Authenticate(gmailEntrade, passwordEntrade)
         GLOBAL.ENTRADE_CLIENT.GetAccountInfo() # Set investor_id
         GLOBAL.ENTRADE_CLIENT.GetAccountBalance() # Set investor_account_id
+
+        entrade_client_data = {
+            "investor_id": GLOBAL.ENTRADE_CLIENT.investor_id,
+            "investor_account_id": GLOBAL.ENTRADE_CLIENT.investor_account_id,
+            "token": GLOBAL.ENTRADE_CLIENT.token
+        }
+        WriteJSONFile("./tunnel/entrade_client_data.json", entrade_client_data)
 
         # Connect to DNSE
         GLOBAL.DNSE_CLIENT.Authenticate(gmailDNSE, passwordDNSE)

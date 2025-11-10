@@ -94,11 +94,15 @@ class EntradeClient:
         #     return response.json()
         # except HTTPError as e:
         #     print("CancelAllOrders() failed! (Entrade):", e)
-        for order in self.GetOrders()["data"]:
-            if order["orderStatus"] != "Canceled":
-                self.CancelOrder(order["id"], is_demo)
+        try:
+            for order in self.GetOrders()["data"]:
+                if order["orderStatus"] != "Canceled":
+                    self.CancelOrder(order["id"], is_demo)
+            return True
+        except:
+            return False
 
-    def ConditionalOrder(self, symbol, side, price, loan, volume, condition, is_demo: bool):
+    def ConditionalOrder(self, symbol, side, price : float, loan, volume, condition, is_demo: bool):
         _headers = {
             "Authorization": f"Bearer {self.token}"
         }
@@ -142,7 +146,7 @@ class EntradeClient:
         except HTTPError as e:
             print("CancelConditionalOrder() failed! (Entrade):", e)
 
-    def CancelAllConditionalOrder(self, is_demo: bool):
+    def CancelAllConditionalOrders(self, is_demo: bool):
         _headers = {
             "Authorization": f"Bearer {self.token}"
         }

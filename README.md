@@ -47,6 +47,14 @@ To build your own bot:
 4. Add the bot to `ACTIVE_BOT` variable inside `logic_processor.py`.
 5. Change logic in `logic_processor.py` to execute more complex logic.
 
+## Using tunnel
+The folder /tunnel is an independent module, used to create a tunnel to execute order through API.
+To use it:
+
+1. Download cloudflared at: https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/downloads/
+2. Run main.py to generate "entrade_client_data.json" inside "/tunnel" (main.py could be closed after)
+3. Run tunnel.py
+
 ## ⚠️ Disclaimer
 This project is for educational and research purposes only.
 Trading involves risk, and past performance does not guarantee future results.
