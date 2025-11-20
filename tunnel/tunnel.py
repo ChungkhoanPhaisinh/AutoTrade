@@ -215,8 +215,7 @@ def OpenTunnel(PORT: int = 7777):
         proc.terminate()
         sys.exit(0)
 
-TUNNEL_ID: int = 5000
-def run_cloudflared_tunnel():
+def run_cloudflared_tunnel(TUNNEL_ID):
     try:
         # Lệnh PowerShell để chạy cloudflared tunnel
         command = ['powershell', '-Command', f'cloudflared tunnel run {TUNNEL_ID}']
@@ -234,11 +233,12 @@ def run_cloudflared_tunnel():
 
 # Chạy hàm run_cloudflared_tunnel trong một tiến trình riêng biệt
 def OpenCustomTunnel():
-    tunnel_thread = Thread(target=run_cloudflared_tunnel)
-    tunnel_thread.start()
-    print("Cloudflared tunnel thread started.")
-
     try:
+        TUNNEL_ID = int(ReadJSONFile("config.json")) # type: ignore
+        tunnel_thread = Thread(target=run_cloudflared_tunnel, args=(TUNNEL_ID,))
+        tunnel_thread.start()
+        print("Cloudflared tunnel thread started.")
+
         run(app, host='0.0.0.0', port=TUNNEL_ID) # Hình như đã set config cloudflared chỉ map về port 5000 rùi
     except KeyboardInterrupt:
         print("\nStopping...")
