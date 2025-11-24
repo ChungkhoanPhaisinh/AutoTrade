@@ -1,0 +1,15 @@
+{
+    "username_entrade": "",
+    "password_entrade": "",
+    
+    "username_dnse": "",
+    "password_dnse": "",
+
+    "cloudflared_tunnel_id": "",
+
+    "use_zalo": false,
+    "phone_zalo": "",
+    "password_zalo": "",
+    "imei_zalo": "",
+    "cookies_zalo": {}
+}

@@ -1,2 +1,6 @@
 __pycache__
 .env
+.DS_Store
+
+zalo_groups.json
+entrade_client_data.json
