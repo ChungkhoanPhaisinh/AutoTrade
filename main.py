@@ -7,8 +7,8 @@ JSON_DATA = ReadJSONFile("config.json")
 gmailEntrade = JSON_DATA["username_entrade"] # Email/SĐT tài khoản Entrade
 passwordEntrade = JSON_DATA["password_entrade"] # Mật khẩu tài khoản Entrade
 
-gmailDNSE = JSON_DATA["username_entrade"] # Email/SĐT tài khoản DNSE
-passwordDNSE = JSON_DATA["password_entrade"] # Mật khẩu tài khoản DNSE
+gmailDNSE = JSON_DATA["username_dnse"] # Email/SĐT tài khoản DNSE
+passwordDNSE = JSON_DATA["password_dnse"] # Mật khẩu tài khoản DNSE
 
 if __name__ == "__main__":
     try:

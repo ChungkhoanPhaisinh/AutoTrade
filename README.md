@@ -22,15 +22,7 @@ pip install -r requirements.txt
 ```
 
 ### 3. Configure your settings
-Create a .env file like this and fill-in your data
-```bash
-usernameEntrade=
-passwordEntrade=
-
-gmailDNSE=<email used to register to DNSE>
-passwordDNSE=
-appPasswordDNSE=
-```
+Fill-in your login data & other configures to "config.json" file
 
 ### 4. Run the system
 ```bash
